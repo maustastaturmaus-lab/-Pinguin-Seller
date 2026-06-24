@@ -3,130 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinguin-Seller Shop v3</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Pinguin-Seller Shop v4</title>
     <style>
         body { font-family: sans-serif; margin: 0; padding: 20px; background: #f8fafc; color: #0f172a; }
         .nav { background: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
         .card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.02); }
         .card img { width: 100%; height: 180px; object-fit: cover; border-radius: 8px; }
-        .btn { width: 100%; padding: 10px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .drawer { position: fixed; top: 0; right: -400px; width: 350px; height: 100vh; background: white; padding: 20px; box-shadow: -5px 0 20px rgba(0,0,0,0.1); transition: right 0.3s; z-index: 1000; }
-        .drawer.open { right: 0; }
-        .admin-drawer { position: fixed; top: 0; left: -400px; width: 350px; height: 100vh; background: white; padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.1); transition: left 0.3s; z-index: 1000; }
-        .admin-drawer.open { left: 0; }
-        .admin-btn { position: fixed; bottom: 20px; left: 20px; background: #1e293b; color: white; width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .btn { width: 100%; padding: 10px; background: #0284c7; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; text-decoration: none; display: inline-block; box-sizing: border-box; }
         .form-group { margin-bottom: 15px; }
         .form-group input, .form-group textarea { width: 100%; padding: 8px; box-sizing: border-box; }
-        .delete-btn { display: none; background: #ef4444; }
-        body.admin-mode .delete-btn { display: block; }
+        .footer-link { display: block; text-align: center; margin-top: 50px; color: #64748b; font-size: 14px; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <div class="nav">
-        <h2>🐧 Pinguin-Seller Shop v3</h2>
-        <button onclick="toggleCart(true)" style="padding:10px; cursor:pointer;">🛒 Warenkorb (<span id="cartCount">0</span>)</button>
+        <h2>🐧 Pinguin-Seller Shop</h2>
+        <button onclick="alert('Warenkorb öffnet sich bald! Füge zuerst Produkte hinzu.')" style="padding:10px; cursor:pointer;">🛒 Warenkorb</button>
     </div>
 
-    <div class="grid" id="shopGrid"></div>
+    <div class="grid">
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500" alt="Pinguin">
+            <h4>Kaiserpinguin Plüschtier</h4>
+            <p style="color:#0284c7; font-weight:bold;">24,99 €</p>
+            <button class="btn" onclick="alert('In den Warenkorb gelegt! 🐧')">In den Korb</button>
+        </div>
+        <div class="card">
+            <img src="https://images.unsplash.com/photo-1598439210625-5067c578f3f6?w=500" alt="Eisberg">
+            <h4>Eisberg Schlüsselanhänger</h4>
+            <p style="color:#0284c7; font-weight:bold;">4,99 €</p>
+            <button class="btn" onclick="alert('In den Warenkorb gelegt! 🐧')">In den Korb</button>
+        </div>
+    </div>
 
     <div style="max-width: 400px; margin: 50px auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
         <h3>📩 Nachricht an uns</h3>
-        <div class="form-group"><input type="email" id="cEmail" placeholder="Deine E-Mail"></div>
-        <div class="form-group"><textarea id="cMsg" rows="3" placeholder="Deine Frage..."></textarea></div>
-        <button class="btn" onclick="sendMsg()">Senden</button>
+        <div class="form-group"><input type="email" placeholder="Deine E-Mail"></div>
+        <div class="form-group"><textarea rows="3" placeholder="Deine Frage..."></textarea></div>
+        <button class="btn" onclick="alert('Nachricht wurde simuliert gesendet!')">Senden</button>
     </div>
 
-    <div class="drawer" id="cartDrawer">
-        <h3>🛒 Dein Warenkorb</h3>
-        <div id="cartItems" style="margin: 20px 0; max-height: 60vh; overflow-y: auto;"></div>
-        <h4>Gesamt: <span id="cartTotal">0,00 €</span></h4>
-        <button class="btn" style="background:#e67e22;" onclick="checkout()">🔒 Jetzt bezahlen</button>
-        <button class="btn" style="background:#eee; color:black;" onclick="toggleCart(false)">Schließen</button>
-    </div>
+    <a href="#" class="footer-link" onclick="let pw = prompt('Admin-Passwort:'); if(pw === '65Di7A1rLwv0'){ alert('Login erfolgreich! Du bist der Boss.'); } else { alert('Falsch!'); }">🔐 Admin Login</a>
 
-    <div class="admin-btn" onclick="tryLogin()"><i class="fa-solid fa-lock"></i></div>
-    
-    <div class="admin-drawer" id="adminDrawer">
-        <h3>👑 Admin Panel</h3>
-        <div class="form-group"><input type="text" id="pName" placeholder="Produktname"></div>
-        <div class="form-group"><input type="number" step="0.01" id="pPrice" placeholder="Preis"></div>
-        <div class="form-group"><input type="text" id="pImg" placeholder="Bild-URL"></div>
-        <button class="btn" onclick="createProduct()">Hinzufügen</button>
-        <hr>
-        <h3>Nachrichten</h3>
-        <div id="adminMessages"></div>
-        <button class="btn" style="background:#eee; color:black;" onclick="toggleAdmin(false)">Schließen</button>
-    </div>
-
-    <script>
-        let isAdmin = false;
-        let cart = [];
-        
-        // Immer frische Standardprodukte beim ersten Laden!
-        let products = [
-            { id: 1, name: "Kaiserpinguin Plüschtier", price: 24.99, img: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500" },
-            { id: 2, name: "Eisberg Schlüsselanhänger", price: 4.99, img: "https://images.unsplash.com/photo-1598439210625-5067c578f3f6?w=500" }
-        ];
-        
-        // Falls im Speicher schon neue Sachen liegen, nimm die
-        if(localStorage.getItem('p_shop_items')) {
-            products = JSON.parse(localStorage.getItem('p_shop_items'));
-        }
-
-        let messages = JSON.parse(localStorage.getItem('p_shop_msgs')) || [];
-
-        window.onload = () => { render(); };
-
-        function render() {
-            let g = document.getElementById('shopGrid');
-            g.innerHTML = "";
-            products.forEach(p => {
-                g.innerHTML += `
-                    <div class="card">
-                        <img src="${p.img}">
-                        <h4>${p.name}</h4>
-                        <p style="color:#0284c7; font-weight:bold;">${p.price.toFixed(2)} €</p>
-                        <button class="btn" onclick="addToCart(${p.id})">In den Korb</button>
-                        <button class="btn delete-btn" onclick="deleteProduct(${p.id})">Löschen</button>
-                    </div>`;
-            });
-        }
-
-        function toggleCart(o) { document.getElementById('cartDrawer').classList.toggle('open', o); }
-        function toggleAdmin(o) { document.getElementById('adminDrawer').classList.toggle('open', o); }
-
-        function addToCart(id) {
-            let p = products.find(x => x.id === id);
-            if(p) { cart.push(p); updateCart(); }
-        }
-
-        function updateCart() {
-            document.getElementById('cartCount').innerText = cart.length;
-            let c = document.getElementById('cartItems');
-            c.innerHTML = "";
-            let t = 0;
-            cart.forEach((item, idx) => {
-                t += item.price;
-                c.innerHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:10px;"><span>${item.name}</span><b>${item.price.toFixed(2)} €</b></div>`;
-            });
-            document.getElementById('cartTotal').innerText = t.toFixed(2) + " €";
-        }
-
-        function checkout() {
-            if(cart.length === 0) return;
-            alert("Hier öffnet sich bald das PayPal deiner Eltern! 🐧");
-            cart = []; updateCart(); toggleCart(false);
-        }
-
-        function sendMsg() {
-            let e = document.getElementById('cEmail').value;
-            let m = document.getElementById('cMsg').value;
-            if(!e || !m) return;
-            messages.push({ e, m });
-            localStorage.setItem('p_shop_msgs', JSON.stringify(messages));
-            alert("Gesendet!");
-            document.getElementById('cEmail').value = "";
-            document.getElementById('cMsg').value = "";
+</body>
+</html>
