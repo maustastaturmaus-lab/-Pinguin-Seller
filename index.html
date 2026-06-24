@@ -3,235 +3,74 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐧 Pinguin-Seller | Shop & Warenkorb</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <title>🐧 Pinguin-Seller | Official Shop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
         :root {
-            --primary: #3498db;
-            --bg-light: #f8fafc;
-            --text-light: #1e293b;
-            --admin-bg: #1e293b;
-            --transition: all 0.3s ease;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --admin-dark: #1e293b;
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
         }
+
         body {
-            font-family: 'Inter', sans-serif; margin: 0; padding: 0;
-            background-color: var(--bg-light); color: var(--text-light);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
         }
-        .header-nav {
-            background: white; padding: 15px 40px; display: flex;
-            justify-content: space-between; align-items: center;
-            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+
+        /* NAVBAR */
+        .navbar {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            padding: 15px 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 999;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
         }
-        .logo { font-family: 'Poppins', sans-serif; font-size: 24px; }
+        .brand { font-family: 'Poppins', sans-serif; font-size: 24px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
         
-        /* Warenkorb Button */
-        .cart-trigger {
-            background: var(--primary); color: white; border: none; padding: 10px 20px;
-            border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;
+        .cart-btn {
+            background: var(--text-main); color: white; border: none; padding: 10px 18px;
+            border-radius: var(--radius-md); font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; gap: 10px; transition: all 0.2s ease;
         }
+        .cart-btn:hover { transform: translateY(-1px); background: #000; }
 
-        /* Shop Layout Grid */
-        .shop-grid {
-            max-width: 1200px; margin: 40px auto; padding: 0 20px;
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;
-        }
-        .product-card {
-            background: white; padding: 20px; border-radius: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: center; position: relative;
-        }
-        .product-card img { max-width: 100%; height: 200px; object-fit: cover; border-radius: 12px; }
-        .product-card h3 { margin: 15px 0 5px 0; font-family: 'Poppins'; }
-        .product-card .price { color: var(--primary); font-weight: 700; font-size: 18px; margin-bottom: 15px; }
-        .btn-buy {
-            background: #27ae60; color: white; border: none; width: 100%; padding: 10px;
-            border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);
-        }
-        .btn-buy:hover { background: #219653; }
+        /* HERO SECTION */
+        .hero { text-align: center; padding: 60px 20px 20px 20px; max-width: 800px; margin: 0 auto; }
+        .hero h1 { font-family: 'Poppins', sans-serif; font-size: 42px; margin: 0 0 15px 0; font-weight: 700; }
+        .hero p { color: var(--text-muted); font-size: 18px; margin: 0; }
 
-        /* Admin Trigger & Drawer */
-        .admin-trigger {
-            position: fixed; bottom: 30px; left: 30px; background: var(--admin-bg);
-            color: white; width: 60px; height: 60px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000;
-        }
-        .admin-drawer {
-            position: fixed; top: 0; left: -450px; width: 400px; height: 100vh;
-            background: #fff; box-shadow: 10px 0 30px rgba(0,0,0,0.1); z-index: 2000;
-            transition: left 0.4s ease; padding: 30px; box-sizing: border-box;
-        }
-        .admin-drawer.open { left: 0; }
-        .field-group { margin-bottom: 15px; }
-        .field-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
-
-        /* Warenkorb Drawer (Rechts) */
-        .cart-drawer {
-            position: fixed; top: 0; right: -450px; width: 400px; height: 100vh;
-            background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); z-index: 2000;
-            transition: right 0.4s ease; padding: 30px; box-sizing: border-box; display: flex; flex-direction: column;
-        }
-        .cart-drawer.open { right: 0; }
-        .cart-items { flex-grow: 1; overflow-y: auto; margin-top: 20px; }
-        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
-        .btn-checkout { background: #e67e22; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
-
-        /* Löschen Button für Admin */
-        .delete-prod-btn { display: none; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%; }
-        body.admin-mode .delete-prod-btn { display: block; }
-    </style>
-</head>
-<body>
-
-    <header class="header-nav">
-        <div class="logo">🐧 Pinguin-Seller</div>
-        <button class="cart-trigger" onclick="toggleCart()">
-            <i class="fa-solid fa-basket-shopping"></i> Warenkorb (<span id="cartCount">0</span>)
-        </button>
-    </header>
-
-    <div class="admin-trigger" onclick="checkAuth()">
-        <i class="fa-solid fa-lock"></i>
-    </div>
-
-    <aside class="admin-drawer" id="adminDrawer">
-        <h2>👑 Produkt-Manager</h2>
-        <p>Füge neue Artikel zu deinem Pinguin-Shop hinzu:</p>
-        <div class="field-group">
-            <label>Produktname</label>
-            <input type="text" id="pName" placeholder="z.B. Kaiserpinguin Kuscheltier">
-        </div>
-        <div class="field-group">
-            <label>Preis (in €)</label>
-            <input type="number" id="pPrice" placeholder="z.B. 19.99">
-        </div>
-        <div class="field-group">
-            <label>Bild-URL</label>
-            <input type="text" id="pImg" placeholder="https://beispiel.de/bild.jpg">
-        </div>
-        <button onclick="addProduct()" style="background:var(--primary); color:white; border:none; padding:12px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer;">Produkt live stellen</button>
-        <button onclick="closeAdmin()" style="background:#eee; border:none; padding:10px; width:100%; border-radius:6px; margin-top:10px; cursor:pointer;">Schließen</button>
-    </aside>
-
-    <aside class="cart-drawer" id="cartDrawer">
-        <h2>🛒 Dein Warenkorb</h2>
-        <div class="cart-items" id="cartItems"></div>
-        <h3 style="display:flex; justify-content:between;">Total: <span id="cartTotal" style="margin-left:auto;">0.00€</span></h3>
-        <button class="btn-checkout" onclick="startCheckout()">🔒 Sicher zur Kasse (Bezahlen)</button>
-        <button onclick="toggleCart()" style="background:#eee; border:none; padding:10px; width:100%; border-radius:6px; margin-top:10px; cursor:pointer;">Weiterleiten zum Shop</button>
-    </aside>
-
-    <main class="shop-grid" id="shopGrid"></main>
-
-    <script>
-        let isAuth = false;
-        let cart = [];
+        /* SHOP GRID */
+        .shop-container { max-width: 1200px; margin: 40px auto; padding: 0 5%; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px; }
+        .product-card { background: var(--surface); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow); border: 1px solid #f1f5f9; text-align: center; transition: transform 0.3s ease; }
+        .product-card:hover { transform: translateY(-5px); }
+        .product-card img { width: 100%; height: 220px; object-fit: cover; border-radius: var(--radius-md); }
+        .product-card h3 { font-family: 'Poppins', sans-serif; margin: 15px 0 8px 0; font-size: 20px; }
+        .product-card .price-tag { color: var(--primary); font-weight: 700; font-size: 20px; margin-bottom: 15px; }
         
-        // Standard-Produkte, falls noch nichts im Speicher ist
-        let products = JSON.parse(localStorage.getItem('pinguin_products')) || [
-            { id: 1, name: "Premium Eis-Pinguin", price: 29.99, img: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500" },
-            { id: 2, name: "Kuschel-Pinguin Baby", price: 14.99, img: "https://images.unsplash.com/photo-1598439210625-5067c578f3f6?w=500" }
-        ];
+        .btn-action { width: 100%; padding: 12px; border-radius: var(--radius-md); border: none; font-weight: 600; font-size: 15px; cursor: pointer; transition: all 0.2s ease; }
+        .btn-buy { background: var(--primary); color: white; }
+        .btn-buy:hover { background: var(--primary-hover); }
 
-        window.onload = () => { renderProducts(); };
-
-        function checkAuth() {
-            if(isAuth) { openAdmin(); return; }
-            let pw = prompt("Admin Passwort eingeben:");
-            if(pw === "65Di7A1rLwv0") {
-                isAuth = true;
-                document.body.classList.add('admin-mode');
-                openAdmin();
-            } else { alert("Falsches Passwort!"); }
-        }
-
-        function openAdmin() { document.getElementById('adminDrawer').classList.add('open'); }
-        function closeAdmin() { document.getElementById('adminDrawer').classList.remove('open'); }
-        function toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); }
-
-        function renderProducts() {
-            let grid = document.getElementById('shopGrid');
-            grid.innerHTML = "";
-            products.forEach(p => {
-                grid.innerHTML += `
-                    <div class="product-card">
-                        <img src="${p.img}" alt="${p.name}">
-                        <h3>${p.name}</h3>
-                        <div class="price">${p.price.toFixed(2)} €</div>
-                        <button class="btn-buy" onclick="addToCart(${p.id})"><i class="fa-solid fa-cart-plus"></i> In den Warenkorb</button>
-                        <button class="delete-prod-btn" onclick="deleteProduct(${p.id})">Produkt löschen</button>
-                    </div>`;
-            });
-        }
-
-        function addProduct() {
-            let name = document.getElementById('pName').value;
-            let price = parseFloat(document.getElementById('pPrice').value);
-            let img = document.getElementById('pImg').value || "https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500";
-            
-            if(!name || isNaN(price)) return alert("Bitte Name und Preis eingeben!");
-            
-            products.push({ id: Date.now(), name, price, img });
-            localStorage.setItem('pinguin_products', JSON.stringify(products));
-            renderProducts();
-            
-            document.getElementById('pName').value = "";
-            document.getElementById('pPrice').value = "";
-            document.getElementById('pImg').value = "";
-        }
-
-        function deleteProduct(id) {
-            products = products.filter(p => p.id !== id);
-            localStorage.setItem('pinguin_products', JSON.stringify(products));
-            renderProducts();
-        }
-
-        function addToCart(id) {
-            let prod = products.find(p => p.id === id);
-            cart.push(prod);
-            updateCartUI();
-        }
-
-        function updateCartUI() {
-            document.getElementById('cartCount').innerText = cart.length;
-            let itemsDiv = document.getElementById('cartItems');
-            itemsDiv.innerHTML = "";
-            let total = 0;
-            
-            cart.forEach((item, index) => {
-                total += item.price;
-                itemsDiv.innerHTML += `
-                    <div class="cart-item">
-                        <span>${item.name}</span>
-                        <strong>${item.price.toFixed(2)} €</strong>
-                        <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer;">X</button>
-                    </div>`;
-            });
-            document.getElementById('cartTotal').innerText = total.toFixed(2) + " €";
-        }
-
-        function removeFromCart(index) {
-            cart.splice(index, 1);
-            updateCartUI();
-        }
-
-        // SIMULIERTE SICHERE KASSE
-        function startCheckout() {
-            if(cart.length === 0) return alert("Dein Warenkorb ist leer!");
-            
-            let total = document.getElementById('cartTotal').innerText;
-            
-            // Hier simulieren wir den Sprung zu einem sicheren Zahlungsanbieter wie Stripe
-            let check = confirm(`Du wirst jetzt zu Stripe weitergeleitet.\nGesamtsumme: ${total}\n\nMöchtest du die sichere Zahlungsumgebung öffnen?`);
-            
-            if(check) {
-                alert("Zahlung erfolgreich simuliert! 🐧🎉\nDanke für deinen Einkauf bei Pinguin-Seller!");
-                cart = [];
-                updateCartUI();
-                toggleCart();
-            }
-        }
-    </script>
-</body>
-</html>
-</html>
+        /* KONTAKT FORMULAR */
+        .contact-section { max-width: 500px; margin: 80px auto; padding: 40px; background: white; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid #f1f5f9; }
+        .contact-section h2 { font-family: 'Poppins', sans-serif; margin-top: 0; margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: var(--radius-md); box-sizing: border-box; font-family: inherit; }
+        
+        /* DRAWERS (SIDE PANELS) */
+        .drawer { position: fixed; top: 0; width: 400px; height: 100vh; background: white; box-shadow: 0 0 40px rgba(0,0,0,0.1); z-index: 10000; transition: all 0.3s ease; padding: 30px; box-sizing: border-box; display: flex; flex-direction: column; }
+        .drawer-close { background: #f1f5f9; border: none; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight:
