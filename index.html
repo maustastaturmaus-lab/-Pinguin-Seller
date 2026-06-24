@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pinguin-Seller Shop</title>
+    <title>Pinguin-Seller Official Shop</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         body { font-family: sans-serif; margin: 0; padding: 20px; background: #f8fafc; color: #0f172a; }
@@ -26,7 +26,7 @@
 <body>
 
     <div class="nav">
-        <h2>🐧 Pinguin-Seller</h2>
+        <h2>🐧 Pinguin-Seller Shop</h2>
         <button onclick="toggleCart(true)" style="padding:10px; cursor:pointer;">🛒 Warenkorb (<span id="cartCount">0</span>)</button>
     </div>
 
@@ -48,6 +48,7 @@
     </div>
 
     <div class="admin-btn" onclick="tryLogin()"><i class="fa-solid fa-lock"></i></div>
+    
     <div class="admin-drawer" id="adminDrawer">
         <h3>👑 Admin Panel</h3>
         <div class="form-group"><input type="text" id="pName" placeholder="Produktname"></div>
@@ -63,27 +64,15 @@
     <script>
         let isAdmin = false;
         let cart = [];
-        let products = JSON.parse(localStorage.getItem('p_list')) || [
-            { id: 1, name: "Kaiserpinguin", price: 24.99, img: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500" }
-        ];
-        let messages = JSON.parse(localStorage.getItem('p_msgs')) || [];
-
-        window.onload = () => { render(); };
-
-        function render() {
-            let g = document.getElementById('shopGrid');
-            g.innerHTML = "";
-            products.forEach(p => {
-                g.innerHTML += `
-                    <div class="card">
-                        <img src="${p.img}">
-                        <h4>${p.name}</h4>
-                        <p style="color:#0284c7; font-weight:bold;">${p.price} €</p>
-                        <button class="btn" onclick="addToCart(${p.id})">In den Korb</button>
-                        <button class="btn delete-btn" onclick="deleteProduct(${p.id})">Löschen</button>
-                    </div>`;
-            });
-        }
-
-        function toggleCart(o) { document.getElementById('cartDrawer').classList.toggle('open', o); }
-        function toggleAdmin(o) { document.getElementById('adminDrawer').
+        
+        // DIESE ZEILEN SUCHEN JETZT IN ALLEN ALTEN SPEICHERN NACH DEINEN PRODUKTEN
+        let oldProducts = JSON.parse(localStorage.getItem('pinguin_products')) || [];
+        let alternativeProducts = JSON.parse(localStorage.getItem('p_products')) || [];
+        let currentProducts = JSON.parse(localStorage.getItem('p_list')) || [];
+        
+        // Kombiniert alle gefundenen Listen, damit nichts verloren geht
+        let products = currentProducts.length > 0 ? currentProducts : (alternativeProducts.length > 0 ? alternativeProducts : oldProducts);
+        
+        // Falls gar nichts existiert, erstellen wir das Standard-Produkt
+        if (products.length === 0) {
+            products =
