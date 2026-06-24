@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐧 Pinguin-Seller Baukasten</title>
+    <title>🐧 Pinguin-Seller Baukasten Pro</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -42,14 +42,15 @@
             color: #fff;
             padding: 20px;
             border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 15 rgba(0,0,0,0.3);
             z-index: 1000;
             max-height: 80vh;
             overflow-y: auto;
         }
         .admin-panel h2 { color: #f1c40f; margin-top: 0; font-size: 20px; }
+        .admin-panel h3 { color: #3498db; font-size: 16px; margin-bottom: 5px; margin-top: 15px;}
         .admin-panel label { display: block; margin-top: 10px; font-size: 13px; color: #ccc; }
-        .admin-panel input, .admin-panel textarea, .admin-panel button {
+        .admin-panel input, .admin-panel textarea, .admin-panel button, .admin-panel select {
             width: 100%;
             padding: 8px;
             margin: 5px 0 10px 0;
@@ -63,11 +64,33 @@
             font-weight: bold;
             cursor: pointer;
         }
-        .admin-panel button.delete-mode-btn {
-            background-color: #e74c3c;
+        .admin-panel button.delete-mode-btn { background-color: #e74c3c; }
+
+        /* Seiten-Navigationsleiste oben (wird dynamisch generiert) */
+        .site-nav {
+            max-width: 1000px;
+            margin: 0 auto 15px auto;
+            display: flex;
+            gap: 10px;
+        }
+        .nav-link {
+            background: #fff;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            color: #2c3e50;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border: 2px solid transparent;
+            cursor: pointer;
+        }
+        .nav-link.active {
+            border-color: #3498db;
+            background: #3498db;
+            color: white;
         }
 
-        /* Der eigentliche Shop-Inhalt (Die Arbeitsfläche) */
+        /* Die Arbeitsfläche */
         .shop-canvas {
             max-width: 1000px;
             margin: 0 auto;
@@ -77,6 +100,13 @@
             padding: 40px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             position: relative;
+            transition: background-color 0.3s;
+        }
+
+        /* Visuelles Feedback beim Datei-Droppen */
+        body.admin-mode .shop-canvas.drag-over-canvas {
+            background-color: #e8f4fd;
+            border: 3px dashed #3498db;
         }
 
         /* Elemente, die verschoben werden können */
@@ -85,10 +115,8 @@
             padding: 10px;
             margin: 10px 0;
             border: 1px transparent dashed;
-            transition: border 0.2s;
         }
 
-        /* Wenn das Admin-Panel offen ist, zeigen wir an, was verschiebbar ist */
         body.admin-mode .draggable-element {
             border: 1px #3498db dashed;
             cursor: move;
@@ -97,7 +125,6 @@
             background-color: rgba(52, 152, 219, 0.05);
         }
 
-        /* Lösch-Button für Elemente im Admin-Modus */
         .delete-overlay {
             display: none;
             position: absolute;
@@ -111,11 +138,8 @@
             font-size: 10px;
             cursor: pointer;
         }
-        body.admin-mode .draggable-element:hover .delete-overlay {
-            display: block;
-        }
+        body.admin-mode .draggable-element:hover .delete-overlay { display: block; }
 
-        /* Stile für hinzugefügte Bilder */
         .editable-image {
             max-width: 100%;
             height: auto;
@@ -131,14 +155,23 @@
         <button class="admin-btn" onclick="toggleAdminPanel()">⚙️ Admin-Modus</button>
     </div>
 
+    <div class="site-nav" id="siteNav"></div>
+
     <div id="adminPanel" class="admin-panel">
         <h2>👑 Eigentümer-Panel</h2>
-        <p style="font-size: 12px; color: #aaa;">Ziehe Elemente einfach mit der Maus hoch oder runter, um sie zu verschieben!</p>
+        <p style="font-size: 12px; color: #aaa;">Tipp: Du kannst Bilddateien jetzt direkt vom PC auf die weiße Fläche ziehen!</p>
+        <hr style="border-color: #444;">
+
+        <h3>📄 Seiten verwalten</h3>
+        <label>Neue leere Seite hinzufügen:</label>
+        <input type="text" id="newPageName" placeholder="z.B. Kontakt oder Shop">
+        <button onclick="createNewPage()" style="background-color: #3498db;">Leere Seite erstellen</button>
+
         <hr style="border-color: #444;">
 
         <h3>➕ Text hinzufügen</h3>
         <label>Typ:</label>
-        <select id="textType" style="width:100%; padding:8px; margin-bottom:10px; border-radius:5px;">
+        <select id="textType">
             <option value="h1">Große Überschrift</option>
             <option value="h2">Mittlere Überschrift</option>
             <option value="p">Normaler Text</option>
@@ -147,25 +180,34 @@
         <textarea id="textContent" placeholder="Dein Text hier..." rows="3"></textarea>
         <button onclick="addText()">Text einfügen</button>
 
-        <h3>➕ Bild hinzufügen</h3>
-        <label>Bild-Internetadresse (URL):</label>
-        <input type="text" id="imageUrl" placeholder="https://beispiel.de/pinguin.jpg">
-        <button onclick="addImage()">Bild einfügen</button>
-
         <hr style="border-color: #444;">
-        <button onclick="clearAllData()" class="delete-mode-btn">⚠️ Website zurücksetzen</button>
+        <button onclick="clearAllData()" class="delete-mode-btn">⚠️ Alles zurücksetzen</button>
     </div>
 
-    <div class="shop-canvas" id="shopCanvas">
-        </div>
+    <div class="shop-canvas" id="shopCanvas"></div>
 
     <script>
         let adminOpen = false;
+        let currentPage = 'home';
+        // Wir speichern alle Seiten in einem Objekt im localStorage
+        let websitePages = {
+            'home': `
+                <div class="draggable-element" draggable="true">
+                    <h1 style="text-align:center;">🐧 Willkommen bei Pinguin-Seller!</h1>
+                    <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
+                </div>
+                <div class="draggable-element" draggable="true">
+                    <p style="text-align:center;">Aktiviere den Admin-Modus, um Texte zu ändern oder Bilder direkt hierhin zu ziehen!</p>
+                    <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
+                </div>`
+        };
 
-        // Beim Starten der Seite: Gespeicherte Website laden
         window.onload = function() {
-            loadWebsite();
+            loadWebsiteData();
+            renderNavigation();
+            loadPage(currentPage);
             setupDragAndDrop();
+            setupFileDrop();
         };
 
         function toggleAdminPanel() {
@@ -183,11 +225,83 @@
                 document.getElementById('adminPanel').style.display = 'none';
                 document.body.classList.remove('admin-mode');
                 adminOpen = false;
-                saveWebsite(); // Automatisch speichern beim Schließen
+                saveCurrentPageData();
             }
         }
 
-        // Funktion: Neuen Text hinzufügen
+        // NEU: Funktion für eine neue weiße Seite
+        function createNewPage() {
+            let pageName = document.getElementById('newPageName').value.trim();
+            if (!pageName) return alert("Bitte einen Seitennamen eingeben!");
+            
+            // ID-freundlichen Namen erstellen (z.B. "Über uns" -> "ueber-uns")
+            let pageId = pageName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+
+            if (websitePages[pageId]) {
+                return alert("Diese Seite existiert bereits!");
+            }
+
+            // Erstelle eine leere weiße Seite mit einem Start-Hinweis
+            websitePages[pageId] = `
+                <div class="draggable-element" draggable="true">
+                    <h2>📄 Neue Seite: ${pageName}</h2>
+                    <p>Diese Seite ist noch leer. Befülle sie im Admin-Modus!</p>
+                    <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
+                </div>`;
+            
+            document.getElementById('newPageName').value = "";
+            saveWebsiteData();
+            renderNavigation();
+            switchPage(pageId);
+        }
+
+        function renderNavigation() {
+            let nav = document.getElementById('siteNav');
+            nav.innerHTML = "";
+            for (let pageId in websitePages) {
+                let btn = document.createElement('button');
+                btn.className = `nav-link ${pageId === currentPage ? 'active' : ''}`;
+                // Schönen Namen anzeigen (Erster Buchstabe groß)
+                btn.innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+                btn.onclick = () => switchPage(pageId);
+                nav.appendChild(btn);
+            }
+        }
+
+        function switchPage(pageId) {
+            saveCurrentPageData();
+            currentPage = pageId;
+            renderNavigation();
+            loadPage(pageId);
+        }
+
+        function loadPage(pageId) {
+            document.getElementById('shopCanvas').innerHTML = websitePages[pageId] || "";
+            setupDragAndDrop();
+        }
+
+        function saveCurrentPageData() {
+            let canvasHtml = document.getElementById('shopCanvas').innerHTML;
+            websitePages[currentPage] = canvasHtml;
+            saveWebsiteData();
+        }
+
+        function saveWebsiteData() {
+            localStorage.setItem('pinguin_pages_data', JSON.stringify(websitePages));
+            localStorage.setItem('pinguin_current_page', currentPage);
+        }
+
+        function loadWebsiteData() {
+            let savedPages = localStorage.getItem('pinguin_pages_data');
+            let savedCurrent = localStorage.getItem('pinguin_current_page');
+            if (savedPages) {
+                websitePages = JSON.parse(savedPages);
+            }
+            if (savedCurrent && websitePages[savedCurrent]) {
+                currentPage = savedCurrent;
+            }
+        }
+
         function addText() {
             let type = document.getElementById('textType').value;
             let content = document.getElementById('textContent').value;
@@ -196,21 +310,57 @@
             let html = `<${type}>${content}</${type}>`;
             createElementWrapper(html);
             document.getElementById('textContent').value = "";
-            saveWebsite();
+            saveCurrentPageData();
         }
 
-        // Funktion: Neues Bild hinzufügen
-        function addImage() {
-            let url = document.getElementById('imageUrl').value;
-            if(!url) return alert("Bitte eine Bild-URL eingeben!");
+        // NEU: Drag & Drop für Bilddateien vom Computer (File Drop)
+        function setupFileDrop() {
+            const canvas = document.getElementById('shopCanvas');
 
-            let html = `<img src="${url}" class="editable-image" alt="Pinguin Shop Bild">`;
-            createElementWrapper(html);
-            document.getElementById('imageUrl').value = "";
-            saveWebsite();
+            // Wenn man ein File über die Arbeitsfläche zieht
+            canvas.addEventListener('dragenter', e => {
+                if(!document.body.classList.contains('admin-mode')) return;
+                e.preventDefault();
+                canvas.classList.add('drag-over-canvas');
+            });
+
+            canvas.addEventListener('dragover', e => {
+                if(!document.body.classList.contains('admin-mode')) return;
+                e.preventDefault();
+            });
+
+            canvas.addEventListener('dragleave', e => {
+                if(!document.body.classList.contains('admin-mode')) return;
+                if(e.target === canvas) {
+                    canvas.classList.remove('drag-over-canvas');
+                }
+            });
+
+            // Wenn man das File fallen lässt
+            canvas.addEventListener('drop', e => {
+                if(!document.body.classList.contains('admin-mode')) return;
+                e.preventDefault();
+                canvas.classList.remove('drag-over-canvas');
+
+                const files = e.dataTransfer.files;
+                if(files.length > 0) {
+                    const file = files[0];
+                    // Prüfen, ob es wirklich ein Bild ist
+                    if(file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            let html = `<img src="${event.target.result}" class="editable-image" alt="Eingefügtes Bild">`;
+                            createElementWrapper(html);
+                            saveCurrentPageData();
+                        };
+                        reader.readAsDataURL(file); // Verwandelt das Bild in Code, der im Browser bleibt
+                    } else {
+                        alert("Bitte nur Bilder hierher ziehen! 🐧");
+                    }
+                }
+            });
         }
 
-        // Erstellt die Hülle um jedes Element (damit es verschiebbar und löschbar ist)
         function createElementWrapper(innerHtml) {
             let canvas = document.getElementById('shopCanvas');
             let wrapper = document.createElement('div');
@@ -224,66 +374,42 @@
         function deleteElement(button) {
             if(confirm("Möchtest du dieses Element wirklich löschen?")) {
                 button.parentElement.remove();
-                saveWebsite();
-            }
-        }
-
-        // WEBSITE SPEICHERN (im Browser)
-        function saveWebsite() {
-            let canvasHtml = document.getElementById('shopCanvas').innerHTML;
-            localStorage.setItem('pinguin_shop_content', canvasHtml);
-        }
-
-        // WEBSITE LADEN
-        function loadWebsite() {
-            let saved = localStorage.getItem('pinguin_shop_content');
-            if (saved && saved.trim() !== "") {
-                document.getElementById('shopCanvas').innerHTML = saved;
-            } else {
-                // Standard-Inhalt, falls noch nichts gespeichert wurde
-                document.getElementById('shopCanvas').innerHTML = `
-                    <div class="draggable-element" draggable="true">
-                        <h1 style="text-align:center;">🐧 Willkommen bei Pinguin-Seller!</h1>
-                        <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
-                    </div>
-                    <div class="draggable-element" draggable="true">
-                        <p style="text-align:center;">Klicke oben auf Admin-Modus, um diese Texte zu löschen, neue hinzuzufügen oder sie zu verschieben!</p>
-                        <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
-                    </div>
-                `;
+                saveCurrentPageData();
             }
         }
 
         function clearAllData() {
-            if(confirm("Möchtest du die gesamte Website auf den Startzustand zurücksetzen?")) {
-                localStorage.removeItem('pinguin_shop_content');
+            if(confirm("Möchtest du das gesamte Projekt löschen und zurücksetzen?")) {
+                localStorage.removeItem('pinguin_pages_data');
+                localStorage.removeItem('pinguin_current_page');
                 location.reload();
             }
         }
 
-        // DRAG AND DROP LOGIK (Zum Verschieben der Elemente)
+        // DRAG AND DROP LOGIK (Elemente sortieren)
         function setupDragAndDrop() {
             const canvas = document.getElementById('shopCanvas');
             
             canvas.addEventListener('dragstart', e => {
                 if(!document.body.classList.contains('admin-mode')) return;
                 const target = e.target.closest('.draggable-element');
-                if(target) {
-                    target.classList.add('dragging');
-                }
+                if(target) target.classList.add('dragging');
             });
 
             canvas.addEventListener('dragend', e => {
                 const target = e.target.closest('.draggable-element');
                 if(target) {
                     target.classList.remove('dragging');
-                    saveWebsite(); // Nach dem Verschieben speichern
+                    saveCurrentPageData();
                 }
             });
 
             canvas.addEventListener('dragover', e => {
-                e.preventDefault();
                 if(!document.body.classList.contains('admin-mode')) return;
+                // Verhindert Konflikte mit dem File Drop
+                if(e.dataTransfer.types.includes('Files')) return; 
+                
+                e.preventDefault();
                 const draggingElement = document.querySelector('.dragging');
                 if(!draggingElement) return;
                 
@@ -298,7 +424,6 @@
 
         function getDragAfterElement(container, y) {
             const draggableElements = [...container.querySelectorAll('.draggable-element:not(.dragging)')];
-
             return draggableElements.reduce((closest, child) => {
                 const box = child.getBoundingClientRect();
                 const offset = y - box.top - box.height / 2;
