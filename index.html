@@ -3,437 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐧 Pinguin-Seller Baukasten Pro</title>
+    <title>🐧 Pinguin-Seller | Shop & Warenkorb</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
     <style>
+        :root {
+            --primary: #3498db;
+            --bg-light: #f8fafc;
+            --text-light: #1e293b;
+            --admin-bg: #1e293b;
+            --transition: all 0.3s ease;
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f8ff;
-            color: #333;
-            margin: 0;
-            padding: 80px 20px 20px 20px;
+            font-family: 'Inter', sans-serif; margin: 0; padding: 0;
+            background-color: var(--bg-light); color: var(--text-light);
+        }
+        .header-nav {
+            background: white; padding: 15px 40px; display: flex;
+            justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+        }
+        .logo { font-family: 'Poppins', sans-serif; font-size: 24px; }
+        
+        /* Warenkorb Button */
+        .cart-trigger {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 10px;
         }
 
-        /* Admin Button oben rechts */
-        .admin-corner {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
+        /* Shop Layout Grid */
+        .shop-grid {
+            max-width: 1200px; margin: 40px auto; padding: 0 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 30px;
         }
-        .admin-btn {
-            background-color: #2c3e50;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        .product-card {
+            background: white; padding: 20px; border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.02); text-align: center; position: relative;
         }
+        .product-card img { max-width: 100%; height: 200px; object-fit: cover; border-radius: 12px; }
+        .product-card h3 { margin: 15px 0 5px 0; font-family: 'Poppins'; }
+        .product-card .price { color: var(--primary); font-weight: 700; font-size: 18px; margin-bottom: 15px; }
+        .btn-buy {
+            background: #27ae60; color: white; border: none; width: 100%; padding: 10px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; transition: var(--transition);
+        }
+        .btn-buy:hover { background: #219653; }
 
-        /* Das Admin-Panel an der Seite */
-        .admin-panel {
-            display: none;
-            position: fixed;
-            top: 80px;
-            right: 20px;
-            width: 320px;
-            background: #222;
-            color: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15 rgba(0,0,0,0.3);
-            z-index: 1000;
-            max-height: 80vh;
-            overflow-y: auto;
+        /* Admin Trigger & Drawer */
+        .admin-trigger {
+            position: fixed; bottom: 30px; left: 30px; background: var(--admin-bg);
+            color: white; width: 60px; height: 60px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 1000;
         }
-        .admin-panel h2 { color: #f1c40f; margin-top: 0; font-size: 20px; }
-        .admin-panel h3 { color: #3498db; font-size: 16px; margin-bottom: 5px; margin-top: 15px;}
-        .admin-panel label { display: block; margin-top: 10px; font-size: 13px; color: #ccc; }
-        .admin-panel input, .admin-panel textarea, .admin-panel button, .admin-panel select {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0 10px 0;
-            border-radius: 5px;
-            border: none;
-            box-sizing: border-box;
+        .admin-drawer {
+            position: fixed; top: 0; left: -450px; width: 400px; height: 100vh;
+            background: #fff; box-shadow: 10px 0 30px rgba(0,0,0,0.1); z-index: 2000;
+            transition: left 0.4s ease; padding: 30px; box-sizing: border-box;
         }
-        .admin-panel button {
-            background-color: #27ae60;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .admin-panel button.delete-mode-btn { background-color: #e74c3c; }
+        .admin-drawer.open { left: 0; }
+        .field-group { margin-bottom: 15px; }
+        .field-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; }
 
-        /* Seiten-Navigationsleiste oben (wird dynamisch generiert) */
-        .site-nav {
-            max-width: 1000px;
-            margin: 0 auto 15px auto;
-            display: flex;
-            gap: 10px;
+        /* Warenkorb Drawer (Rechts) */
+        .cart-drawer {
+            position: fixed; top: 0; right: -450px; width: 400px; height: 100vh;
+            background: #fff; box-shadow: -10px 0 30px rgba(0,0,0,0.1); z-index: 2000;
+            transition: right 0.4s ease; padding: 30px; box-sizing: border-box; display: flex; flex-direction: column;
         }
-        .nav-link {
-            background: #fff;
-            padding: 8px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-            color: #2c3e50;
-            font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            border: 2px solid transparent;
-            cursor: pointer;
-        }
-        .nav-link.active {
-            border-color: #3498db;
-            background: #3498db;
-            color: white;
-        }
+        .cart-drawer.open { right: 0; }
+        .cart-items { flex-grow: 1; overflow-y: auto; margin-top: 20px; }
+        .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .btn-checkout { background: #e67e22; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
 
-        /* Die Arbeitsfläche */
-        .shop-canvas {
-            max-width: 1000px;
-            margin: 0 auto;
-            min-height: 500px;
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            position: relative;
-            transition: background-color 0.3s;
-        }
-
-        /* Visuelles Feedback beim Datei-Droppen */
-        body.admin-mode .shop-canvas.drag-over-canvas {
-            background-color: #e8f4fd;
-            border: 3px dashed #3498db;
-        }
-
-        /* Elemente, die verschoben werden können */
-        .draggable-element {
-            position: relative;
-            padding: 10px;
-            margin: 10px 0;
-            border: 1px transparent dashed;
-        }
-
-        body.admin-mode .draggable-element {
-            border: 1px #3498db dashed;
-            cursor: move;
-        }
-        body.admin-mode .draggable-element:hover {
-            background-color: rgba(52, 152, 219, 0.05);
-        }
-
-        .delete-overlay {
-            display: none;
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: #e74c3c;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 2px 6px;
-            font-size: 10px;
-            cursor: pointer;
-        }
-        body.admin-mode .draggable-element:hover .delete-overlay { display: block; }
-
-        .editable-image {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            margin: 10px auto;
-            border-radius: 8px;
-        }
+        /* Löschen Button für Admin */
+        .delete-prod-btn { display: none; background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 5px; margin-top: 10px; cursor: pointer; width: 100%; }
+        body.admin-mode .delete-prod-btn { display: block; }
     </style>
 </head>
 <body>
 
-    <div class="admin-corner">
-        <button class="admin-btn" onclick="toggleAdminPanel()">⚙️ Admin-Modus</button>
+    <header class="header-nav">
+        <div class="logo">🐧 Pinguin-Seller</div>
+        <button class="cart-trigger" onclick="toggleCart()">
+            <i class="fa-solid fa-basket-shopping"></i> Warenkorb (<span id="cartCount">0</span>)
+        </button>
+    </header>
+
+    <div class="admin-trigger" onclick="checkAuth()">
+        <i class="fa-solid fa-lock"></i>
     </div>
 
-    <div class="site-nav" id="siteNav"></div>
+    <aside class="admin-drawer" id="adminDrawer">
+        <h2>👑 Produkt-Manager</h2>
+        <p>Füge neue Artikel zu deinem Pinguin-Shop hinzu:</p>
+        <div class="field-group">
+            <label>Produktname</label>
+            <input type="text" id="pName" placeholder="z.B. Kaiserpinguin Kuscheltier">
+        </div>
+        <div class="field-group">
+            <label>Preis (in €)</label>
+            <input type="number" id="pPrice" placeholder="z.B. 19.99">
+        </div>
+        <div class="field-group">
+            <label>Bild-URL</label>
+            <input type="text" id="pImg" placeholder="https://beispiel.de/bild.jpg">
+        </div>
+        <button onclick="addProduct()" style="background:var(--primary); color:white; border:none; padding:12px; width:100%; border-radius:6px; font-weight:bold; cursor:pointer;">Produkt live stellen</button>
+        <button onclick="closeAdmin()" style="background:#eee; border:none; padding:10px; width:100%; border-radius:6px; margin-top:10px; cursor:pointer;">Schließen</button>
+    </aside>
 
-    <div id="adminPanel" class="admin-panel">
-        <h2>👑 Eigentümer-Panel</h2>
-        <p style="font-size: 12px; color: #aaa;">Tipp: Du kannst Bilddateien jetzt direkt vom PC auf die weiße Fläche ziehen!</p>
-        <hr style="border-color: #444;">
+    <aside class="cart-drawer" id="cartDrawer">
+        <h2>🛒 Dein Warenkorb</h2>
+        <div class="cart-items" id="cartItems"></div>
+        <h3 style="display:flex; justify-content:between;">Total: <span id="cartTotal" style="margin-left:auto;">0.00€</span></h3>
+        <button class="btn-checkout" onclick="startCheckout()">🔒 Sicher zur Kasse (Bezahlen)</button>
+        <button onclick="toggleCart()" style="background:#eee; border:none; padding:10px; width:100%; border-radius:6px; margin-top:10px; cursor:pointer;">Weiterleiten zum Shop</button>
+    </aside>
 
-        <h3>📄 Seiten verwalten</h3>
-        <label>Neue leere Seite hinzufügen:</label>
-        <input type="text" id="newPageName" placeholder="z.B. Kontakt oder Shop">
-        <button onclick="createNewPage()" style="background-color: #3498db;">Leere Seite erstellen</button>
-
-        <hr style="border-color: #444;">
-
-        <h3>➕ Text hinzufügen</h3>
-        <label>Typ:</label>
-        <select id="textType">
-            <option value="h1">Große Überschrift</option>
-            <option value="h2">Mittlere Überschrift</option>
-            <option value="p">Normaler Text</option>
-        </select>
-        <label>Inhalt:</label>
-        <textarea id="textContent" placeholder="Dein Text hier..." rows="3"></textarea>
-        <button onclick="addText()">Text einfügen</button>
-
-        <hr style="border-color: #444;">
-        <button onclick="clearAllData()" class="delete-mode-btn">⚠️ Alles zurücksetzen</button>
-    </div>
-
-    <div class="shop-canvas" id="shopCanvas"></div>
+    <main class="shop-grid" id="shopGrid"></main>
 
     <script>
-        let adminOpen = false;
-        let currentPage = 'home';
-        // Wir speichern alle Seiten in einem Objekt im localStorage
-        let websitePages = {
-            'home': `
-                <div class="draggable-element" draggable="true">
-                    <h1 style="text-align:center;">🐧 Willkommen bei Pinguin-Seller!</h1>
-                    <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
-                </div>
-                <div class="draggable-element" draggable="true">
-                    <p style="text-align:center;">Aktiviere den Admin-Modus, um Texte zu ändern oder Bilder direkt hierhin zu ziehen!</p>
-                    <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
-                </div>`
-        };
+        let isAuth = false;
+        let cart = [];
+        
+        // Standard-Produkte, falls noch nichts im Speicher ist
+        let products = JSON.parse(localStorage.getItem('pinguin_products')) || [
+            { id: 1, name: "Premium Eis-Pinguin", price: 29.99, img: "https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500" },
+            { id: 2, name: "Kuschel-Pinguin Baby", price: 14.99, img: "https://images.unsplash.com/photo-1598439210625-5067c578f3f6?w=500" }
+        ];
 
-        window.onload = function() {
-            loadWebsiteData();
-            renderNavigation();
-            loadPage(currentPage);
-            setupDragAndDrop();
-            setupFileDrop();
-        };
+        window.onload = () => { renderProducts(); };
 
-        function toggleAdminPanel() {
-            let password = "pinguin123";
-            if (!adminOpen) {
-                let entry = prompt("Bitte Admin-Passwort eingeben:");
-                if (entry === password) {
-                    document.getElementById('adminPanel').style.display = 'block';
-                    document.body.classList.add('admin-mode');
-                    adminOpen = true;
-                } else {
-                    alert("Falsches Passwort! 🐧❌");
-                }
-            } else {
-                document.getElementById('adminPanel').style.display = 'none';
-                document.body.classList.remove('admin-mode');
-                adminOpen = false;
-                saveCurrentPageData();
-            }
+        function checkAuth() {
+            if(isAuth) { openAdmin(); return; }
+            let pw = prompt("Admin Passwort eingeben:");
+            if(pw === "65Di7A1rLwv0") {
+                isAuth = true;
+                document.body.classList.add('admin-mode');
+                openAdmin();
+            } else { alert("Falsches Passwort!"); }
         }
 
-        // NEU: Funktion für eine neue weiße Seite
-        function createNewPage() {
-            let pageName = document.getElementById('newPageName').value.trim();
-            if (!pageName) return alert("Bitte einen Seitennamen eingeben!");
+        function openAdmin() { document.getElementById('adminDrawer').classList.add('open'); }
+        function closeAdmin() { document.getElementById('adminDrawer').classList.remove('open'); }
+        function toggleCart() { document.getElementById('cartDrawer').classList.toggle('open'); }
+
+        function renderProducts() {
+            let grid = document.getElementById('shopGrid');
+            grid.innerHTML = "";
+            products.forEach(p => {
+                grid.innerHTML += `
+                    <div class="product-card">
+                        <img src="${p.img}" alt="${p.name}">
+                        <h3>${p.name}</h3>
+                        <div class="price">${p.price.toFixed(2)} €</div>
+                        <button class="btn-buy" onclick="addToCart(${p.id})"><i class="fa-solid fa-cart-plus"></i> In den Warenkorb</button>
+                        <button class="delete-prod-btn" onclick="deleteProduct(${p.id})">Produkt löschen</button>
+                    </div>`;
+            });
+        }
+
+        function addProduct() {
+            let name = document.getElementById('pName').value;
+            let price = parseFloat(document.getElementById('pPrice').value);
+            let img = document.getElementById('pImg').value || "https://images.unsplash.com/photo-1517783999520-f068d7431a60?w=500";
             
-            // ID-freundlichen Namen erstellen (z.B. "Über uns" -> "ueber-uns")
-            let pageId = pageName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-
-            if (websitePages[pageId]) {
-                return alert("Diese Seite existiert bereits!");
-            }
-
-            // Erstelle eine leere weiße Seite mit einem Start-Hinweis
-            websitePages[pageId] = `
-                <div class="draggable-element" draggable="true">
-                    <h2>📄 Neue Seite: ${pageName}</h2>
-                    <p>Diese Seite ist noch leer. Befülle sie im Admin-Modus!</p>
-                    <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
-                </div>`;
+            if(!name || isNaN(price)) return alert("Bitte Name und Preis eingeben!");
             
-            document.getElementById('newPageName').value = "";
-            saveWebsiteData();
-            renderNavigation();
-            switchPage(pageId);
-        }
-
-        function renderNavigation() {
-            let nav = document.getElementById('siteNav');
-            nav.innerHTML = "";
-            for (let pageId in websitePages) {
-                let btn = document.createElement('button');
-                btn.className = `nav-link ${pageId === currentPage ? 'active' : ''}`;
-                // Schönen Namen anzeigen (Erster Buchstabe groß)
-                btn.innerText = pageId.charAt(0).toUpperCase() + pageId.slice(1);
-                btn.onclick = () => switchPage(pageId);
-                nav.appendChild(btn);
-            }
-        }
-
-        function switchPage(pageId) {
-            saveCurrentPageData();
-            currentPage = pageId;
-            renderNavigation();
-            loadPage(pageId);
-        }
-
-        function loadPage(pageId) {
-            document.getElementById('shopCanvas').innerHTML = websitePages[pageId] || "";
-            setupDragAndDrop();
-        }
-
-        function saveCurrentPageData() {
-            let canvasHtml = document.getElementById('shopCanvas').innerHTML;
-            websitePages[currentPage] = canvasHtml;
-            saveWebsiteData();
-        }
-
-        function saveWebsiteData() {
-            localStorage.setItem('pinguin_pages_data', JSON.stringify(websitePages));
-            localStorage.setItem('pinguin_current_page', currentPage);
-        }
-
-        function loadWebsiteData() {
-            let savedPages = localStorage.getItem('pinguin_pages_data');
-            let savedCurrent = localStorage.getItem('pinguin_current_page');
-            if (savedPages) {
-                websitePages = JSON.parse(savedPages);
-            }
-            if (savedCurrent && websitePages[savedCurrent]) {
-                currentPage = savedCurrent;
-            }
-        }
-
-        function addText() {
-            let type = document.getElementById('textType').value;
-            let content = document.getElementById('textContent').value;
-            if(!content) return alert("Bitte Text eingeben!");
-
-            let html = `<${type}>${content}</${type}>`;
-            createElementWrapper(html);
-            document.getElementById('textContent').value = "";
-            saveCurrentPageData();
-        }
-
-        // NEU: Drag & Drop für Bilddateien vom Computer (File Drop)
-        function setupFileDrop() {
-            const canvas = document.getElementById('shopCanvas');
-
-            // Wenn man ein File über die Arbeitsfläche zieht
-            canvas.addEventListener('dragenter', e => {
-                if(!document.body.classList.contains('admin-mode')) return;
-                e.preventDefault();
-                canvas.classList.add('drag-over-canvas');
-            });
-
-            canvas.addEventListener('dragover', e => {
-                if(!document.body.classList.contains('admin-mode')) return;
-                e.preventDefault();
-            });
-
-            canvas.addEventListener('dragleave', e => {
-                if(!document.body.classList.contains('admin-mode')) return;
-                if(e.target === canvas) {
-                    canvas.classList.remove('drag-over-canvas');
-                }
-            });
-
-            // Wenn man das File fallen lässt
-            canvas.addEventListener('drop', e => {
-                if(!document.body.classList.contains('admin-mode')) return;
-                e.preventDefault();
-                canvas.classList.remove('drag-over-canvas');
-
-                const files = e.dataTransfer.files;
-                if(files.length > 0) {
-                    const file = files[0];
-                    // Prüfen, ob es wirklich ein Bild ist
-                    if(file.type.startsWith('image/')) {
-                        const reader = new FileReader();
-                        reader.onload = function(event) {
-                            let html = `<img src="${event.target.result}" class="editable-image" alt="Eingefügtes Bild">`;
-                            createElementWrapper(html);
-                            saveCurrentPageData();
-                        };
-                        reader.readAsDataURL(file); // Verwandelt das Bild in Code, der im Browser bleibt
-                    } else {
-                        alert("Bitte nur Bilder hierher ziehen! 🐧");
-                    }
-                }
-            });
-        }
-
-        function createElementWrapper(innerHtml) {
-            let canvas = document.getElementById('shopCanvas');
-            let wrapper = document.createElement('div');
-            wrapper.className = 'draggable-element';
-            wrapper.draggable = true;
-            wrapper.innerHTML = `${innerHtml}<button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>`;
-            canvas.appendChild(wrapper);
-            setupDragAndDrop();
-        }
-
-        function deleteElement(button) {
-            if(confirm("Möchtest du dieses Element wirklich löschen?")) {
-                button.parentElement.remove();
-                saveCurrentPageData();
-            }
-        }
-
-        function clearAllData() {
-            if(confirm("Möchtest du das gesamte Projekt löschen und zurücksetzen?")) {
-                localStorage.removeItem('pinguin_pages_data');
-                localStorage.removeItem('pinguin_current_page');
-                location.reload();
-            }
-        }
-
-        // DRAG AND DROP LOGIK (Elemente sortieren)
-        function setupDragAndDrop() {
-            const canvas = document.getElementById('shopCanvas');
+            products.push({ id: Date.now(), name, price, img });
+            localStorage.setItem('pinguin_products', JSON.stringify(products));
+            renderProducts();
             
-            canvas.addEventListener('dragstart', e => {
-                if(!document.body.classList.contains('admin-mode')) return;
-                const target = e.target.closest('.draggable-element');
-                if(target) target.classList.add('dragging');
-            });
-
-            canvas.addEventListener('dragend', e => {
-                const target = e.target.closest('.draggable-element');
-                if(target) {
-                    target.classList.remove('dragging');
-                    saveCurrentPageData();
-                }
-            });
-
-            canvas.addEventListener('dragover', e => {
-                if(!document.body.classList.contains('admin-mode')) return;
-                // Verhindert Konflikte mit dem File Drop
-                if(e.dataTransfer.types.includes('Files')) return; 
-                
-                e.preventDefault();
-                const draggingElement = document.querySelector('.dragging');
-                if(!draggingElement) return;
-                
-                const afterElement = getDragAfterElement(canvas, e.clientY);
-                if (afterElement == null) {
-                    canvas.appendChild(draggingElement);
-                } else {
-                    canvas.insertBefore(draggingElement, afterElement);
-                }
-            });
+            document.getElementById('pName').value = "";
+            document.getElementById('pPrice').value = "";
+            document.getElementById('pImg').value = "";
         }
 
-        function getDragAfterElement(container, y) {
-            const draggableElements = [...container.querySelectorAll('.draggable-element:not(.dragging)')];
-            return draggableElements.reduce((closest, child) => {
-                const box = child.getBoundingClientRect();
-                const offset = y - box.top - box.height / 2;
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                } else {
-                    return closest;
-                }
-            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        function deleteProduct(id) {
+            products = products.filter(p => p.id !== id);
+            localStorage.setItem('pinguin_products', JSON.stringify(products));
+            renderProducts();
+        }
+
+        function addToCart(id) {
+            let prod = products.find(p => p.id === id);
+            cart.push(prod);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').innerText = cart.length;
+            let itemsDiv = document.getElementById('cartItems');
+            itemsDiv.innerHTML = "";
+            let total = 0;
+            
+            cart.forEach((item, index) => {
+                total += item.price;
+                itemsDiv.innerHTML += `
+                    <div class="cart-item">
+                        <span>${item.name}</span>
+                        <strong>${item.price.toFixed(2)} €</strong>
+                        <button onclick="removeFromCart(${index})" style="background:none; border:none; color:red; cursor:pointer;">X</button>
+                    </div>`;
+            });
+            document.getElementById('cartTotal').innerText = total.toFixed(2) + " €";
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        // SIMULIERTE SICHERE KASSE
+        function startCheckout() {
+            if(cart.length === 0) return alert("Dein Warenkorb ist leer!");
+            
+            let total = document.getElementById('cartTotal').innerText;
+            
+            // Hier simulieren wir den Sprung zu einem sicheren Zahlungsanbieter wie Stripe
+            let check = confirm(`Du wirst jetzt zu Stripe weitergeleitet.\nGesamtsumme: ${total}\n\nMöchtest du die sichere Zahlungsumgebung öffnen?`);
+            
+            if(check) {
+                alert("Zahlung erfolgreich simuliert! 🐧🎉\nDanke für deinen Einkauf bei Pinguin-Seller!");
+                cart = [];
+                updateCartUI();
+                toggleCart();
+            }
         }
     </script>
 </body>
+</html>
 </html>
