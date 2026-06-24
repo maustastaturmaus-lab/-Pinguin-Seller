@@ -102,4 +102,213 @@
             display: none;
             position: absolute;
             top: 2px;
+            right: 2px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 2px 6px;
+            font-size: 10px;
+            cursor: pointer;
+        }
+        body.admin-mode .draggable-element:hover .delete-overlay {
+            display: block;
+        }
+
+        /* Stile für hinzugefügte Bilder */
+        .editable-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 10px auto;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="admin-corner">
+        <button class="admin-btn" onclick="toggleAdminPanel()">⚙️ Admin-Modus</button>
+    </div>
+
+    <div id="adminPanel" class="admin-panel">
+        <h2>👑 Eigentümer-Panel</h2>
+        <p style="font-size: 12px; color: #aaa;">Ziehe Elemente einfach mit der Maus hoch oder runter, um sie zu verschieben!</p>
+        <hr style="border-color: #444;">
+
+        <h3>➕ Text hinzufügen</h3>
+        <label>Typ:</label>
+        <select id="textType" style="width:100%; padding:8px; margin-bottom:10px; border-radius:5px;">
+            <option value="h1">Große Überschrift</option>
+            <option value="h2">Mittlere Überschrift</option>
+            <option value="p">Normaler Text</option>
+        </select>
+        <label>Inhalt:</label>
+        <textarea id="textContent" placeholder="Dein Text hier..." rows="3"></textarea>
+        <button onclick="addText()">Text einfügen</button>
+
+        <h3>➕ Bild hinzufügen</h3>
+        <label>Bild-Internetadresse (URL):</label>
+        <input type="text" id="imageUrl" placeholder="https://beispiel.de/pinguin.jpg">
+        <button onclick="addImage()">Bild einfügen</button>
+
+        <hr style="border-color: #444;">
+        <button onclick="clearAllData()" class="delete-mode-btn">⚠️ Website zurücksetzen</button>
+    </div>
+
+    <div class="shop-canvas" id="shopCanvas">
+        </div>
+
+    <script>
+        let adminOpen = false;
+
+        // Beim Starten der Seite: Gespeicherte Website laden
+        window.onload = function() {
+            loadWebsite();
+            setupDragAndDrop();
+        };
+
+        function toggleAdminPanel() {
+            let password = "pinguin123";
+            if (!adminOpen) {
+                let entry = prompt("Bitte Admin-Passwort eingeben:");
+                if (entry === password) {
+                    document.getElementById('adminPanel').style.display = 'block';
+                    document.body.classList.add('admin-mode');
+                    adminOpen = true;
+                } else {
+                    alert("Falsches Passwort! 🐧❌");
+                }
+            } else {
+                document.getElementById('adminPanel').style.display = 'none';
+                document.body.classList.remove('admin-mode');
+                adminOpen = false;
+                saveWebsite(); // Automatisch speichern beim Schließen
+            }
+        }
+
+        // Funktion: Neuen Text hinzufügen
+        function addText() {
+            let type = document.getElementById('textType').value;
+            let content = document.getElementById('textContent').value;
+            if(!content) return alert("Bitte Text eingeben!");
+
+            let html = `<${type}>${content}</${type}>`;
+            createElementWrapper(html);
+            document.getElementById('textContent').value = "";
+            saveWebsite();
+        }
+
+        // Funktion: Neues Bild hinzufügen
+        function addImage() {
+            let url = document.getElementById('imageUrl').value;
+            if(!url) return alert("Bitte eine Bild-URL eingeben!");
+
+            let html = `<img src="${url}" class="editable-image" alt="Pinguin Shop Bild">`;
+            createElementWrapper(html);
+            document.getElementById('imageUrl').value = "";
+            saveWebsite();
+        }
+
+        // Erstellt die Hülle um jedes Element (damit es verschiebbar und löschbar ist)
+        function createElementWrapper(innerHtml) {
+            let canvas = document.getElementById('shopCanvas');
+            let wrapper = document.createElement('div');
+            wrapper.className = 'draggable-element';
+            wrapper.draggable = true;
+            wrapper.innerHTML = `${innerHtml}<button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>`;
+            canvas.appendChild(wrapper);
+            setupDragAndDrop();
+        }
+
+        function deleteElement(button) {
+            if(confirm("Möchtest du dieses Element wirklich löschen?")) {
+                button.parentElement.remove();
+                saveWebsite();
+            }
+        }
+
+        // WEBSITE SPEICHERN (im Browser)
+        function saveWebsite() {
+            let canvasHtml = document.getElementById('shopCanvas').innerHTML;
+            localStorage.setItem('pinguin_shop_content', canvasHtml);
+        }
+
+        // WEBSITE LADEN
+        function loadWebsite() {
+            let saved = localStorage.getItem('pinguin_shop_content');
+            if (saved && saved.trim() !== "") {
+                document.getElementById('shopCanvas').innerHTML = saved;
+            } else {
+                // Standard-Inhalt, falls noch nichts gespeichert wurde
+                document.getElementById('shopCanvas').innerHTML = `
+                    <div class="draggable-element" draggable="true">
+                        <h1 style="text-align:center;">🐧 Willkommen bei Pinguin-Seller!</h1>
+                        <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
+                    </div>
+                    <div class="draggable-element" draggable="true">
+                        <p style="text-align:center;">Klicke oben auf Admin-Modus, um diese Texte zu löschen, neue hinzuzufügen oder sie zu verschieben!</p>
+                        <button class="delete-overlay" onclick="deleteElement(this)">Löschen X</button>
+                    </div>
+                `;
+            }
+        }
+
+        function clearAllData() {
+            if(confirm("Möchtest du die gesamte Website auf den Startzustand zurücksetzen?")) {
+                localStorage.removeItem('pinguin_shop_content');
+                location.reload();
+            }
+        }
+
+        // DRAG AND DROP LOGIK (Zum Verschieben der Elemente)
+        function setupDragAndDrop() {
+            const canvas = document.getElementById('shopCanvas');
+            
+            canvas.addEventListener('dragstart', e => {
+                if(!document.body.classList.contains('admin-mode')) return;
+                const target = e.target.closest('.draggable-element');
+                if(target) {
+                    target.classList.add('dragging');
+                }
+            });
+
+            canvas.addEventListener('dragend', e => {
+                const target = e.target.closest('.draggable-element');
+                if(target) {
+                    target.classList.remove('dragging');
+                    saveWebsite(); // Nach dem Verschieben speichern
+                }
+            });
+
+            canvas.addEventListener('dragover', e => {
+                e.preventDefault();
+                if(!document.body.classList.contains('admin-mode')) return;
+                const draggingElement = document.querySelector('.dragging');
+                if(!draggingElement) return;
+                
+                const afterElement = getDragAfterElement(canvas, e.clientY);
+                if (afterElement == null) {
+                    canvas.appendChild(draggingElement);
+                } else {
+                    canvas.insertBefore(draggingElement, afterElement);
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable-element:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+    </script>
+</body>
 </html>
